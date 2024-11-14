@@ -7,7 +7,9 @@
 {% endblock %}
 
 {% block content %}
-
+{% if messages %}
+<h2> {{ messages }} </h2>
+{% endif %}
 <form method="post" class="form-control">
  <input type="text" name="name" placeholder="Введите имя" class="form-control"><br>
  <input type="text" name="username" placeholder="Введите логин" class="form-control"><br>

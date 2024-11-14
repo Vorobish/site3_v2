@@ -2,12 +2,13 @@ from flask import render_template, flash, request, abort, redirect, url_for, cur
 from flask_admin.helpers import is_safe_url
 from flask_login import login_user, current_user, login_required, logout_user, LoginManager
 from flask_security.core import AnonymousUser
+from sqlalchemy import insert
 
 from app.forms import LoginForm
 from werkzeug.security import generate_password_hash
 
 from app import app, db
-from app.models import User, Menu
+from app.models import User, Menu, Order, OrderIn
 
 app.config['SECRET_KEY'] = 'any secret string'
 
@@ -22,31 +23,54 @@ basket_list = {}
 @app.route('/base/')
 def base():
     global current_user
+    # db.session.rollback()
+
     return render_template('base.html', current_user=current_user)
 
 
 @app.route('/register/', methods=['POST', 'GET'])
 def register():
     global current_user
+    messages =''
+    print('tyt')
     if request.method == 'POST':
+        print('tyt2')
         name = request.form['name']
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
+        print('tyt3')
         hash_password = generate_password_hash(password)
-
-        user = User(name=name
-                    , username=username
-                    , email=email
-                    , password=hash_password)
-        try:
-            db.session.add(user)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return "При добавлении пользователя произошла ошибка"
+        user_exist_username = User.query.filter_by(username=username).first()
+        print('user_exist_username', user_exist_username)
+        user_exist_email = User.query.filter_by(email=email).first()
+        print('user_exist_email', user_exist_email)
+        if user_exist_username:
+            messages = 'Логин занят, придумайте другой'
+            print(messages)
+        elif user_exist_email:
+            messages = 'Пользователь с данным email уже зарегистрирован'
+            print(messages)
+        else:
+            user = User(name=name
+                        , username=username
+                        , email=email
+                        , password=hash_password)
+            try:
+                print('тут')
+                db.session.add(user)
+                db.session.commit()
+                messages = f'Успешная регистрация (пользователь: {name})'
+                print(messages)
+                return render_template('register.html', current_user=current_user, messages=messages)
+            except:
+                messages = "При добавлении пользователя произошла ошибка"
+                print(messages)
+                return render_template('register.html', current_user=current_user, messages=messages)
+        return render_template('register.html', current_user=current_user, messages=messages)
     else:
-        return render_template('register.html', current_user=current_user)
+        print('esleend')
+        return render_template('register.html', current_user=current_user, messages=messages)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -84,15 +108,13 @@ def menu():
     global current_user, basket_list
     if request.method == 'POST':
         if 'add' in request.form:
-            form_dict = dict(request.form)
-            menu_id = int(form_dict['menu.id'])
+            menu_id = int(request.form.get('menu.id'))
             if menu_id in basket_list:
                 basket_list[menu_id] += 1
             else:
                 basket_list.update({menu_id: 1})
         if 'del' in request.form:
-            form_dict = dict(request.form)
-            menu_id = int(form_dict['menu.id'])
+            menu_id = int(request.form.get('menu.id'))
             if menu_id in basket_list:
                 if basket_list[menu_id] > 1:
                     basket_list[menu_id] -= 1
@@ -109,22 +131,6 @@ def basket():
     list_info = {}
     res = 0
     messages = ''
-    if request.method == 'POST':
-        if 'add' in request.form:
-            form_dict = dict(request.form)
-            menu_id = int(form_dict['key'])
-            if menu_id in basket_list:
-                basket_list[menu_id] += 1
-            else:
-                basket_list.update({menu_id: 1})
-        if 'del' in request.form:
-            form_dict = dict(request.form)
-            menu_id = int(form_dict['key'])
-            if menu_id in basket_list:
-                if basket_list[menu_id] > 1:
-                    basket_list[menu_id] -= 1
-                elif basket_list[menu_id] == 1:
-                    basket_list.pop(menu_id)
     for i in basket_list:
         menu = Menu.query.filter_by(id=i).first()
         name = menu.name_food
@@ -133,6 +139,62 @@ def basket():
         list_info.update(
             {i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
         res += price * amount
+    if request.method == 'POST':
+        if 'add' in request.form:
+            menu_id = int(request.form.get('key'))
+            if menu_id in basket_list:
+                basket_list[menu_id] += 1
+            else:
+                basket_list.update({menu_id: 1})
+        if 'del' in request.form:
+            menu_id = int(request.form.get('key'))
+            if menu_id in basket_list:
+                if basket_list[menu_id] > 1:
+                    basket_list[menu_id] -= 1
+                elif basket_list[menu_id] == 1:
+                    basket_list.pop(menu_id)
+        if 'order' in request.form:
+            if current_user.id > 1:
+                user_id = current_user.id
+                deli = request.form.get('deli')
+                phone = request.form.get('phone')
+                address = request.form.get('address')
+                comment = request.form.get('comment')
+                delivery = 'self'
+                if deli == 'avto':
+                    res += 200
+                    delivery = 'avto'
+                order = Order(user_id=user_id
+                              , summa=res
+                              , delivery=delivery
+                              , phone=phone
+                              , address=address
+                              , comment=comment)
+                try:
+                    db.session.add(order)
+                    db.session.commit()
+                except:
+                    return "При добавлении заказа произошла ошибка"
+                number = Order.query.order_by(Order.id.desc()).first()
+                for i in basket_list:
+                    menu = Menu.query.filter_by(id=i).first()
+                    price = menu.price
+                    count = int(basket_list[i])
+                    summa = price * count
+                    orderin = OrderIn(order_id=number.id,
+                                      menu_id=i,
+                                      count=count,
+                                      summa=summa)
+                    try:
+                        db.session.add(orderin)
+                        db.session.commit()
+                    except:
+                        return "При добавлении заказа произошла ошибка"
+                basket_list.clear()
+                list_info.clear()
+                messages = f'Заказ создан, номер {number.id}'
+            else:
+                messages = 'Для оформления заказа нужно авторизоваться'
     title = 'Корзина'
     return render_template('basket.html', current_user=current_user, list_info=list_info, title=title
                            , res=res, messages=messages)

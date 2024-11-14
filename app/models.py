@@ -54,6 +54,32 @@ class Menu(db.Model):
     time_update = db.Column(db.DateTime)
 
 
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    user_id = db.Column(db.Integer)
+    summa = db.Column(db.Numeric(10, 2), nullable=False)
+    delivery = db.Column(db.String, default='self')
+    phone = db.Column(db.String)
+    address = db.Column(db.String)
+    pay_stat = db.Column(db.String, default='not')
+    status = db.Column(db.Integer, default=1)
+    comment = db.Column(db.Text)
+    time_create = db.Column(db.DateTime, default=datetime.now())
+    time_update = db.Column(db.DateTime, default=datetime.now())
+
+
+class OrderIn(db.Model):
+    __tablename__ = 'orderins'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    order_id = db.Column(db.Integer, nullable=False, index=True)
+    menu_id = db.Column(db.Integer, nullable=False, index=True)
+    count = db.Column(db.Integer)
+    summa = db.Column(db.Numeric(10, 2))
+    time_create = db.Column(db.DateTime, default=datetime.now())
+    time_update = db.Column(db.DateTime, default=datetime.now())
+
+
 # flask db init
 # flask db migrate -m "Initial migration."
 # flask db upgrade
