@@ -8,11 +8,9 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-
 from . import models
 
 # flask db init
 # flask db migrate -m "Initial migration."
 # flask db upgrade
 # flask db --help
-

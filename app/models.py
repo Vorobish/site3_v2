@@ -79,10 +79,8 @@ class OrderIn(db.Model):
     time_create = db.Column(db.DateTime, default=datetime.now())
     time_update = db.Column(db.DateTime, default=datetime.now())
 
-
 # flask db init
 # flask db migrate -m "Initial migration."
 # flask db upgrade
 # flask db migrate -m "Initial revision."
 # flask db upgrade
-

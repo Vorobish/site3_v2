@@ -29,52 +29,40 @@ def base():
 @app.route('/register/', methods=['POST', 'GET'])
 def register():
     global current_user
-    messages =''
-    print('tyt')
+    messages = ''
     if request.method == 'POST':
-        print('tyt2')
         name = request.form['name']
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
-        print('tyt3')
         hash_password = generate_password_hash(password)
         user_exist_username = User.query.filter_by(username=username).first()
-        print('user_exist_username', user_exist_username)
         user_exist_email = User.query.filter_by(email=email).first()
-        print('user_exist_email', user_exist_email)
         if user_exist_username:
             messages = 'Логин занят, придумайте другой'
-            print(messages)
         elif user_exist_email:
             messages = 'Пользователь с данным email уже зарегистрирован'
-            print(messages)
         else:
             user = User(name=name
                         , username=username
                         , email=email
                         , password=hash_password)
             try:
-                print('тут')
                 db.session.add(user)
                 db.session.commit()
                 messages = f'Успешная регистрация (пользователь: {name})'
-                print(messages)
                 return render_template('register.html', current_user=current_user, messages=messages)
             except:
                 messages = "При добавлении пользователя произошла ошибка"
-                print(messages)
                 return render_template('register.html', current_user=current_user, messages=messages)
         return render_template('register.html', current_user=current_user, messages=messages)
     else:
-        print('esleend')
         return render_template('register.html', current_user=current_user, messages=messages)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     global current_user
-    print('current_user', current_user)
     messages = ''
     form = LoginForm()
     if form.validate_on_submit():
@@ -89,7 +77,7 @@ def login():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.filter_by(id=user_id).first()    # Fetch the user from the database
+    return User.query.filter_by(id=user_id).first()  # Fetch the user from the database
 
 
 @app.route('/logout/')
@@ -254,7 +242,7 @@ def order(order_id):
         title = 'Детали заказа'
         return render_template('order.html', current_user=current_user, title=title, order_id=order_id
                                , summa=summa, deli_info=deli_info, phone=order.phone, address=order.address
-                               , pay_info=pay_info,stat_info=stat_info, comment=order.comment
+                               , pay_info=pay_info, stat_info=stat_info, comment=order.comment
                                , time_create=order.time_create, list_detail=list_detail)
     else:
         return 'Для просмотра заказа нужно авторизоваться!'
@@ -263,16 +251,8 @@ def order(order_id):
 if __name__ == '__main__':
     app.run(debug=True)
 
-
 # pip install flask_sqlalchemy
 # в python консоли
 # from app import app, db
 # app.app_context().push()
 # db.create_all()
-
-
-
-
-
-
-
