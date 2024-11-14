@@ -1,0 +1,46 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} Главная страница {% endblock %}</title>
+    <link rel="stylesheet" href='{{ url_for("static", filename="css/style12.css") }}'>
+</head>
+<body>
+<header>
+    {% block pagename %}
+        <h1>Главная страница</h1>
+    {% endblock %}
+</header>
+
+<nav>
+    {% block menu %}
+    <a href='http://127.0.0.1:5000/base/'>
+        <button type="button">Главная старица</button>
+    </a>
+    <a href='http://127.0.0.1:5000/menu/'>
+        <button type="button">Меню</button>
+    </a>
+    <a href='http://127.0.0.1:5000/basket/'>
+        <button type="button">Корзина</button>
+    </a>
+    <a href='http://127.0.0.1:5000/orders/'>
+        <button type="button">Заказы</button>
+    </a>
+    <a href='http://127.0.0.1:5000/login/'>
+        <button type="button">Войти</button>
+    </a>
+    <a href='http://127.0.0.1:5000/register/'>
+        <button type="button">Зарегистрироваться</button>
+    </a>
+    <a href='http://127.0.0.1:5000/logout/'>
+        <button type="button">Выйти</button>
+    </a>
+    {% endblock %}
+</nav>
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+</body>
+</html>
