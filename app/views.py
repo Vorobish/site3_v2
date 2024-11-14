@@ -206,18 +206,58 @@ def orders():
     return render_template('orders.html', current_user=current_user, title=title, orderss=orderss)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+@app.route('/orders/order/<order_id>/')
+def order(order_id):
+    global current_user
+    order = Order.query.filter_by(id=order_id).first()
+    if current_user.id == order.user_id:
+        summa = order.summa
+        delivery = order.delivery
+        deli_info = ''
+        if delivery == 'avto':
+            deli_info = 'с доставкой (200 руб.)'
+        else:
+            deli_info = 'самовывоз'
+        pay_stat = order.pay_stat
+        pay_info = ''
+        if pay_stat == 'paid':
+            pay_info = 'заказ оплачен'
+        elif pay_stat == 'part':
+            pay_info = 'внесен аванс'
+        else:
+            pay_info = 'не оплачен'
+        status = order.status
+        stat_info = ''
+        if status == 1:
+            stat_info = 'создан'
+        elif status == 2:
+            stat_info = 'принят'
+        elif status == 3:
+            stat_info = 'отказан'
+        elif status == 4:
+            stat_info = 'в работе'
+        elif status == 5:
+            stat_info = 'готов'
+        elif status == 6:
+            stat_info = 'у курьера'
+        else:
+            stat_info = 'исполнен'
+        detail = OrderIn.query.filter_by(order_id=order_id)
+        list_detail = []
+        for i in detail:
+            menu = Menu.query.filter_by(id=i.menu_id).first()
+            count = i.count
+            name = menu.name_food
+            price = menu.price
+            list_detail.append(
+                f"{name}, количество = {count}, сумма: {float(price)} руб. * {count} = {float(price) * count} руб.")
+        title = 'Детали заказа'
+        return render_template('order.html', current_user=current_user, title=title, order_id=order_id
+                               , summa=summa, deli_info=deli_info, phone=order.phone, address=order.address
+                               , pay_info=pay_info,stat_info=stat_info, comment=order.comment
+                               , time_create=order.time_create, list_detail=list_detail)
+    else:
+        return 'Для просмотра заказа нужно авторизоваться!'
 
 
 if __name__ == '__main__':

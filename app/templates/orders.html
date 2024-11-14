@@ -10,7 +10,7 @@
 {% for order in orderss %}
 <ul>
     <li>Номер заказа: {{ order.id }}, дата: {{ order.time_create }}, сумма: {{ order.summa | float}}
-        <a href='/{{ order.id }}'>
+        <a href='order/{{ order.id }}'>
             <button type="button" name="info">детали заказа</button>
         </a>
     </li>
