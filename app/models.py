@@ -43,6 +43,11 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
 
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.get(user_id) # Fetch the user from the database
+
+
 class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_food = db.Column(db.String(30), nullable=False)
@@ -53,3 +58,11 @@ class Menu(db.Model):
     image = db.Column(db.String(30))
     time_create = db.Column(db.DateTime)
     time_update = db.Column(db.DateTime)
+
+
+# flask db init
+# flask db migrate -m "Initial migration."
+# flask db upgrade
+# flask db migrate -m "Initial revision."
+# flask db upgrade
+
