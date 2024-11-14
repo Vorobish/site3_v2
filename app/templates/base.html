@@ -13,17 +13,17 @@
 
 <nav>
     {% block menu %}
-    <a href='http://127.0.0.1:5000/base/'>
+    <a href='/base/'>
         <button type="button">Главная старица</button>
     </a>
-    <a href='http://127.0.0.1:5000/menu/'>
+    <a href='/menu/'>
         <button type="button">Меню</button>
     </a>
-    <a href='http://127.0.0.1:5000/basket/'>
+    <a href='/basket/'>
         <button type="button">Корзина</button>
     </a>
     {% if current_user.id > 1 %}
-    <a href='http://127.0.0.1:5000/orders/'>
+    <a href='/orders/'>
         <button type="button">Заказы</button>
     </a>
     {% endif %}
@@ -31,14 +31,14 @@
     {{ current_user.name }}
     <br><br>
     {% if current_user.id == 1 %}
-    <a href='http://127.0.0.1:5000/login/'>
+    <a href='/login/'>
         <button type="button">Войти</button>
     </a>
-    <a href='http://127.0.0.1:5000/register/'>
+    <a href='/register/'>
         <button type="button">Зарегистрироваться</button>
     </a>
     {% else %}
-    <a href='http://127.0.0.1:5000/logout/'>
+    <a href='/logout/'>
         <button type="button">Выйти</button>
     </a>
     {% endif %}

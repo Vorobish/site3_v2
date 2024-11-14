@@ -23,8 +23,6 @@ basket_list = {}
 @app.route('/base/')
 def base():
     global current_user
-    # db.session.rollback()
-
     return render_template('base.html', current_user=current_user)
 
 
@@ -200,7 +198,12 @@ def basket():
                            , res=res, messages=messages)
 
 
-
+@app.route('/orders/')
+def orders():
+    global current_user
+    orderss = Order.query.filter_by(user_id=current_user.id).order_by(Order.id.desc()).all()
+    title = 'Заказы'
+    return render_template('orders.html', current_user=current_user, title=title, orderss=orderss)
 
 
 
