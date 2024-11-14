@@ -7,7 +7,24 @@
 {% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href='{{ url_for("static", filename="css/style12.css") }}'>
-<img src='{{ url_for("static", filename="image/vegan1.jpg") }}' style="width: 250px; height: 250px;">
-
+<div id="main">
+    {% for menu in menus %}
+    <div>
+        <h2>{{ menu.name_food }}</h2>
+        <p>Вес: {{ menu.weight_gr }}, Цена: {{ menu.price }}</p>
+        <img src="{{ url_for('static', filename=menu.image) }}" style="width: 250px; height: 250px;">
+        <p style="width: 250px">Состав: {{ menu.ingredients }}</p>
+        {% for key, value in basket_list.items() %}
+        {% if key == menu.id %}
+        <p>Добавлено в корзину {{ value }} шт</p>
+        {% endif %}
+        {% endfor %}
+        <form method="post">
+            <input type="hidden" id="menu.id" name="menu.id" maxlength="10" value="{{ menu.id }}" required>
+            <button type="submit" name="add">Добавить в корзину</button>
+            <button type="submit" name="del">-1</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

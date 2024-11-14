@@ -7,7 +7,7 @@ from app.forms import LoginForm
 from werkzeug.security import generate_password_hash
 
 from app import app, db
-from app.models import User
+from app.models import User, Menu
 
 app.config['SECRET_KEY'] = 'any secret string'
 
@@ -15,18 +15,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+basket_list = {}
+
 
 @app.route('/')
 @app.route('/base/')
 def base():
     global current_user
     return render_template('base.html', current_user=current_user)
-
-
-@app.route('/menu/')
-def menu():
-    global current_user
-    return render_template('menu.html', current_user=current_user)
 
 
 @app.route('/register/', methods=['POST', 'GET'])
@@ -72,6 +68,91 @@ def login():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(id=user_id).first()    # Fetch the user from the database
+
+
+@app.route('/logout/')
+def logout():
+    global current_user
+    current_user = User.query.filter_by(id=1).first()
+    messages = 'Вы вышли из личного кабинета'
+    form = LoginForm()
+    return render_template('login.html', form=form, messages=messages, current_user=current_user)
+
+
+@app.route('/menu/', methods=['GET', 'POST'])
+def menu():
+    global current_user, basket_list
+    if request.method == 'POST':
+        if 'add' in request.form:
+            form_dict = dict(request.form)
+            menu_id = int(form_dict['menu.id'])
+            if menu_id in basket_list:
+                basket_list[menu_id] += 1
+            else:
+                basket_list.update({menu_id: 1})
+        if 'del' in request.form:
+            form_dict = dict(request.form)
+            menu_id = int(form_dict['menu.id'])
+            if menu_id in basket_list:
+                if basket_list[menu_id] > 1:
+                    basket_list[menu_id] -= 1
+                elif basket_list[menu_id] == 1:
+                    basket_list.pop(menu_id)
+    menus = Menu.query.all()
+    return render_template('menu.html', current_user=current_user, menus=menus
+                           , basket_list=basket_list)
+
+
+@app.route('/basket/', methods=['GET', 'POST'])
+def basket():
+    global current_user, basket_list
+    list_info = {}
+    res = 0
+    messages = ''
+    if request.method == 'POST':
+        if 'add' in request.form:
+            form_dict = dict(request.form)
+            menu_id = int(form_dict['key'])
+            if menu_id in basket_list:
+                basket_list[menu_id] += 1
+            else:
+                basket_list.update({menu_id: 1})
+        if 'del' in request.form:
+            form_dict = dict(request.form)
+            menu_id = int(form_dict['key'])
+            if menu_id in basket_list:
+                if basket_list[menu_id] > 1:
+                    basket_list[menu_id] -= 1
+                elif basket_list[menu_id] == 1:
+                    basket_list.pop(menu_id)
+    for i in basket_list:
+        menu = Menu.query.filter_by(id=i).first()
+        name = menu.name_food
+        price = menu.price
+        amount = basket_list[i]
+        list_info.update(
+            {i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
+        res += price * amount
+    title = 'Корзина'
+    return render_template('basket.html', current_user=current_user, list_info=list_info, title=title
+                           , res=res, messages=messages)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
