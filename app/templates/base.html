@@ -22,18 +22,26 @@
     <a href='http://127.0.0.1:5000/basket/'>
         <button type="button">Корзина</button>
     </a>
+    {% if current_user.id > 1 %}
     <a href='http://127.0.0.1:5000/orders/'>
         <button type="button">Заказы</button>
     </a>
+    {% endif %}
+    <br><br>
+    {{ current_user.name }}
+    <br><br>
+    {% if current_user.id == 1 %}
     <a href='http://127.0.0.1:5000/login/'>
         <button type="button">Войти</button>
     </a>
     <a href='http://127.0.0.1:5000/register/'>
         <button type="button">Зарегистрироваться</button>
     </a>
+    {% else %}
     <a href='http://127.0.0.1:5000/logout/'>
         <button type="button">Выйти</button>
     </a>
+    {% endif %}
     {% endblock %}
 </nav>
 

@@ -1,4 +1,3 @@
-from flask_login import login_manager
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -41,11 +40,6 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
-
-
-# @login_manager.user_loader
-# def load_user(user_id):
-#     return User.get(user_id) # Fetch the user from the database
 
 
 class Menu(db.Model):

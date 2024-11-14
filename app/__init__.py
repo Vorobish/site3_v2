@@ -8,6 +8,7 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
+
 from . import models
 
 # flask db init

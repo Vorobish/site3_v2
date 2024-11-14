@@ -1,44 +1,77 @@
-from flask import render_template, flash, request, abort, redirect, url_for
+from flask import render_template, flash, request, abort, redirect, url_for, current_app
 from flask_admin.helpers import is_safe_url
-from flask_login import login_user
-from flask_security import LoginForm
-from sqlalchemy.sql.functions import user
+from flask_login import login_user, current_user, login_required, logout_user, LoginManager
+from flask_security.core import AnonymousUser
+
+from app.forms import LoginForm
+from werkzeug.security import generate_password_hash
 
 from app import app, db
+from app.models import User
+
+app.config['SECRET_KEY'] = 'any secret string'
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
 @app.route('/')
 @app.route('/base/')
 def base():
-    return render_template('base.html')
+    global current_user
+    return render_template('base.html', current_user=current_user)
 
 
 @app.route('/menu/')
 def menu():
-    return render_template('menu.html')
+    global current_user
+    return render_template('menu.html', current_user=current_user)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/register/', methods=['POST', 'GET'])
+def register():
+    global current_user
+    if request.method == 'POST':
+        name = request.form['name']
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        hash_password = generate_password_hash(password)
+
+        user = User(name=name
+                    , username=username
+                    , email=email
+                    , password=hash_password)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return redirect('/')
+        except:
+            return "При добавлении пользователя произошла ошибка"
+    else:
+        return render_template('register.html', current_user=current_user)
+
+
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
+    global current_user
+    print('current_user', current_user)
+    messages = ''
     form = LoginForm()
     if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
+        # Validate the user's credentials
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and user.check_password(str(request.form['password'])):
+            current_user = user
+            return redirect('/')
+        messages = 'Некорректный логин или пароль'
+    return render_template('login.html', form=form, messages=messages, current_user=current_user)
 
-        flash('Logged in successfully.')
 
-        next = request.args.get('next')
-        # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
-        if not is_safe_url(next):
-            return abort(400)
-
-        return redirect(next or url_for('base'))
-    return render_template('login.html', form=form)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=user_id).first()    # Fetch the user from the database
 
 
 if __name__ == '__main__':
