@@ -22,12 +22,18 @@ basket_list = {}
 @app.route('/')
 @app.route('/base/')
 def base():
+    '''
+        Главная страница
+    '''
     global current_user
     return render_template('base.html', current_user=current_user)
 
 
 @app.route('/register/', methods=['POST', 'GET'])
 def register():
+    '''
+        Регистрация пользователя
+    '''
     global current_user
     messages = ''
     if request.method == 'POST':
@@ -62,6 +68,9 @@ def register():
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
+    '''
+        Авторизация пользователя
+    '''
     global current_user
     messages = ''
     form = LoginForm()
@@ -82,6 +91,9 @@ def load_user(user_id):
 
 @app.route('/logout/')
 def logout():
+    '''
+        Функция выхода из ЛК
+    '''
     global current_user
     current_user = User.query.filter_by(id=1).first()
     messages = 'Вы вышли из личного кабинета'
@@ -91,6 +103,9 @@ def logout():
 
 @app.route('/menu/', methods=['GET', 'POST'])
 def menu():
+    '''
+        Страница Меню - выбор товаров
+    '''
     global current_user, basket_list
     if request.method == 'POST':
         if 'add' in request.form:
@@ -113,6 +128,9 @@ def menu():
 
 @app.route('/basket/', methods=['GET', 'POST'])
 def basket():
+    '''
+        Страница корзина - оформление заказа
+    '''
     global current_user, basket_list
     list_info = {}
     res = 0
@@ -188,6 +206,9 @@ def basket():
 
 @app.route('/orders/')
 def orders():
+    '''
+        Страница с заказами пользователя
+    '''
     global current_user
     orderss = Order.query.filter_by(user_id=current_user.id).order_by(Order.id.desc()).all()
     title = 'Заказы'
@@ -196,6 +217,9 @@ def orders():
 
 @app.route('/orders/order/<order_id>/')
 def order(order_id):
+    '''
+        Страница с данными о конкретном заказе пользователя
+    '''
     global current_user
     order = Order.query.filter_by(id=order_id).first()
     if current_user.id == order.user_id:

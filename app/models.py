@@ -4,6 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(db.Model):
+    '''
+        Класс пользователь
+    '''
     __tablename__ = 'users'
     id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String)
@@ -43,6 +46,9 @@ class User(db.Model):
 
 
 class Menu(db.Model):
+    '''
+        Меню - товар в меню
+    '''
     id = db.Column(db.Integer, primary_key=True)
     name_food = db.Column(db.String(30), nullable=False)
     category = db.Column(db.Integer, nullable=False)
@@ -55,6 +61,9 @@ class Menu(db.Model):
 
 
 class Order(db.Model):
+    '''
+        Заказ
+    '''
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer)
@@ -70,6 +79,9 @@ class Order(db.Model):
 
 
 class OrderIn(db.Model):
+    '''
+        Состав заказа
+    '''
     __tablename__ = 'orderins'
     id = db.Column(db.Integer, primary_key=True, index=True)
     order_id = db.Column(db.Integer, nullable=False, index=True)
